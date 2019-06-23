@@ -1,9 +1,4 @@
-use hyper::Headers;
-header! { (PageSizeHeader, "Page-Size") => [u32] }
-header! { (CountHeader, "Count") => [u32] }
-header! { (TotalCountHeader, "Total-Count") => [u32] }
-header! { (RatelimitLimitHeader, "Ratelimit-Limit") => [u32] }
-header! { (RatelimitRemainingHeader, "Ratelimit-Remaining") => [u32] }
+use reqwest::header::HeaderMap;
 
 /// Response returned by the Cards API
 #[allow(dead_code)]
@@ -17,14 +12,22 @@ pub struct ApiResponse<T> {
 }
 
 impl<T> ApiResponse<T> {
-    pub(crate) fn new(content: T, headers: &Headers) -> ApiResponse<T> {
-        let page_size = headers.get::<PageSizeHeader>().map(|header| header.0);
-        let count = headers.get::<CountHeader>().map(|header| header.0);
-        let total_count = headers.get::<TotalCountHeader>().map(|header| header.0);
-        let ratelimit_limit = headers.get::<RatelimitLimitHeader>().map(|header| header.0);
-        let ratelimit_remaining = headers
-            .get::<RatelimitRemainingHeader>()
-            .map(|header| header.0);
+    pub(crate) fn new(content: T, headers: &HeaderMap) -> ApiResponse<T> {
+        let page_size = headers.get("Page-Size")
+            .unwrap().to_str().unwrap().parse::<u32>().unwrap();
+        let count = headers.get("Count")
+            .unwrap().to_str().unwrap().parse::<u32>().unwrap();
+        let total_count = headers.get("Total-Count")
+            .unwrap().to_str().unwrap().parse::<u32>().unwrap();
+        let ratelimit_limit = headers.get("Ratelimit-Limit")
+            .unwrap().to_str().unwrap().parse::<u32>().unwrap();
+        let ratelimit_remaining = headers.get("Ratelimit-Remaining")
+            .unwrap().to_str().unwrap().parse::<u32>().unwrap();
+        let page_size = Some(page_size);
+        let count = Some(count);
+        let total_count = Some(total_count);
+        let ratelimit_limit = Some(ratelimit_limit);
+        let ratelimit_remaining = Some(ratelimit_remaining);
         ApiResponse {
             content,
             page_size,
